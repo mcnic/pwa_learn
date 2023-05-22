@@ -1,7 +1,9 @@
 var title = document.querySelector('.title');
 var courseFeatureElements = document.querySelectorAll('.course-feature');
 var button = document.querySelector('button');
+const timeCoef = 100
 
+navigator.serviceWorker.register('/sw.js')
 
 function animate() {
   title.classList.remove('animate-in');
@@ -12,43 +14,43 @@ function animate() {
 
   setTimeout(function () {
     title.classList.add('animate-in');
-  }, 1000);
+  }, timeCoef);
 
   setTimeout(function () {
     courseFeatureElements[0].classList.add('animate-in');
-  }, 3000);
+  }, timeCoef * 3);
 
   setTimeout(function () {
     courseFeatureElements[1].classList.add('animate-in');
-  }, 4500);
+  }, timeCoef * 4.5);
 
   setTimeout(function () {
     courseFeatureElements[2].classList.add('animate-in');
-  }, 6000);
+  }, timeCoef * 6);
 
   setTimeout(function () {
     courseFeatureElements[3].classList.add('animate-in');
-  }, 7500);
+  }, timeCoef * 7.5);
 
   setTimeout(function () {
     courseFeatureElements[4].classList.add('animate-in');
-  }, 9000);
+  }, timeCoef * 9);
 
   setTimeout(function () {
     courseFeatureElements[5].classList.add('animate-in');
-  }, 10500);
+  }, timeCoef * 10.5);
 
   setTimeout(function () {
     courseFeatureElements[6].classList.add('animate-in');
-  }, 12000);
+  }, timeCoef * 12);
 
   setTimeout(function () {
     button.classList.add('animate-in');
-  }, 13500);
+  }, timeCoef * 13.5);
 }
 
 animate();
 
-button.addEventListener('click', function() {
+button.addEventListener('click', function () {
   animate();
 });
