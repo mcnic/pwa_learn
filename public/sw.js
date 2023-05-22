@@ -1,7 +1,8 @@
-self.addEventListener('install', function(event) {
+self.addEventListener('install', (event) => {
+  //or self.oninstall = (event) => {
   event.waitUntil(
     caches.open('first-app')
-      .then(function(cache) {
+      .then((cache) => {
         cache.addAll([
           '/',
           '/index.html',
@@ -13,10 +14,10 @@ self.addEventListener('install', function(event) {
   return self.clients.claim();
 });
 
-self.addEventListener('fetch', function(event) {
+self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
-      .then(function(res) {
+      .then(function (res) {
         return res;
       })
   );

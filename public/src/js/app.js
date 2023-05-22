@@ -1,13 +1,11 @@
-var title = document.querySelector('.title');
-var courseFeatureElements = document.querySelectorAll('.course-feature');
-var button = document.querySelector('button');
+const title = document.querySelector('.title');
+const courseFeatureElements = document.querySelectorAll('.course-feature');
+const button = document.querySelector('button');
 const timeCoef = 100
-
-navigator.serviceWorker.register('/sw.js')
 
 function animate() {
   title.classList.remove('animate-in');
-  for (var i = 0; i < courseFeatureElements.length; i++) {
+  for (let i = 0; i < courseFeatureElements.length; i++) {
     courseFeatureElements[i].classList.remove('animate-in');
   }
   button.classList.remove('animate-in');
@@ -48,6 +46,8 @@ function animate() {
     button.classList.add('animate-in');
   }, timeCoef * 13.5);
 }
+
+navigator.serviceWorker.register('/sw.js')
 
 animate();
 
