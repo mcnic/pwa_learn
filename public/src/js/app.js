@@ -1,5 +1,9 @@
 let deferredPrompt;
 
+if (!window.Promise) {
+  window.Promise = Promise
+}
+
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker
     .register('/sw.js')
@@ -35,24 +39,24 @@ const unregisterServiceWorker = () => {
 //   })
 //   .catch(err => console.log({ err }))
 
-fetch('http://httpbin.org/post', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  },
-  mode: 'cors',
-  body: JSON.stringify('test string')
-})
-  .then((resp) => {
-    console.log({ resp })
-    if (resp.status === 200) {
-      return resp.json()
-    } else {
-      throw new Error(resp.statusText || `wrong status ${resp.status}`)
-    }
-  })
-  .then(data => {
-    console.log('data', data);
-  })
-  .catch(err => console.log({ err }))
+// fetch('http://httpbin.org/post', {
+//   method: 'POST',
+//   headers: {
+//     'Content-Type': 'application/json',
+//     'Accept': 'application/json'
+//   },
+//   mode: 'cors',
+//   body: JSON.stringify('test string')
+// })
+//   .then((resp) => {
+//     console.log({ resp })
+//     if (resp.status === 200) {
+//       return resp.json()
+//     } else {
+//       throw new Error(resp.statusText || `wrong status ${resp.status}`)
+//     }
+//   })
+//   .then(data => {
+//     console.log('data', data);
+//   })
+//   .catch(err => console.log({ err }))
