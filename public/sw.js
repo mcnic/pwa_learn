@@ -1,13 +1,16 @@
-const CACHE_NAME = 'offline'
+const CACHE_NAME = 'static'
 
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker ...', event);
-  event.waitUntil(async () => {
+  console.log('[SW] Installing service worker ...');
+
+  event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME)
+
+    console.log('[SW] Precaching App Shell ...');
+
     await cache.addAll([
       '/manifest.json',
       '/',
-      '/?',
       '/index.html',
       '/help',
       '/help/index.html',
@@ -17,7 +20,7 @@ self.addEventListener('install', (event) => {
       '/src/js/app.js',
       '/src/js/feed.js',
       '/src/js/fetch.js',
-      '/src/js/primise.js',
+      '/src/js/promise.js',
       '/src/js/material.min.js',
       '/favicon.ico',
       '/src/images/main-image.jpg',
@@ -31,13 +34,13 @@ self.addEventListener('install', (event) => {
       'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css',
       'https://fonts.googleapis.com/icon?family=Material+Icons',
       'https://fonts.googleapis.com/css?family=Roboto:400,700',
-    ])
-  }
-  );
+    ]);
+  })());
 });
 
+
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating service worker ...', event);
+  console.log('[SW] Activating service worker ...');
   event.waitUntil((async () => {
     if ('navigationPreload' in self.registration) {
       await self.registration.navigationPreload.enable();
@@ -52,24 +55,32 @@ self.addEventListener('fetch', (event) => {
 
   // fetch(event.request)
 
-  if (event.request.mode === 'navigate') {
-    event.respondWith((async () => {
-      try {
-        const preloadResponse = await event.preloadResponse;
-        if (preloadResponse) {
-          return preloadResponse;
-        }
+  // if (event.request.mode === 'navigate') {
+  event.respondWith((async () => {
+    try {
+      // const preloadResponse = await event.preloadResponse;
+      // if (preloadResponse) {
+      //   return preloadResponse;
+      // }
 
-        const networkResponse = await fetch(event.request);
-        return networkResponse;
-      } catch (error) {
-        console.log('Fetch failed; returning offline page instead.', event.request, error);
-
-        const cache = await caches.open(CACHE_NAME);
-        const cachedResponse = await cache.match(event.request.url);
-        console.log({ cachedResponse });
-        return cachedResponse;
+      const response = await caches.match(event.request)
+      if (response) {
+        return response;
+      } else {
+        console.log('response NOT in cache, Fetching ...');
+        return fetch(event.request);
       }
-    })());
-  }
+
+      // const networkResponse = await fetch(event.request);
+      // return networkResponse;
+    } catch (error) {
+      console.log('Fetch failed; returning offline page instead.', event.request, error);
+
+      // const cache = await caches.open(CACHE_NAME);
+      // const cachedResponse = await cache.match(event.request.url);
+      // console.log({ cachedResponse });
+      // return cachedResponse;
+    }
+  })());
+  // }
 });
