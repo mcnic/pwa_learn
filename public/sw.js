@@ -1,8 +1,13 @@
+const CACHE_VERSION = 2;
+const CACHE_NAME = 'static-v' + CACHE_VERSION;
+const DYNAMIC_CACHE_NAME = 'dynamic'
+const ALL_CACHE = [CACHE_NAME, DYNAMIC_CACHE_NAME]
+
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing service worker ...');
 
   event.waitUntil((async () => {
-    const cache = await caches.open('static')
+    const cache = await caches.open(CACHE_NAME)
 
     console.log('[SW] Precaching App Shell ...');
 
@@ -39,11 +44,27 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activating service worker ...');
+
   event.waitUntil((async () => {
     if ('navigationPreload' in self.registration) {
       await self.registration.navigationPreload.enable();
     }
   })());
+
+  // delete old cache
+  event.waitUntil(
+    caches.keys().then(function (cacheNames) {
+      return Promise.all(
+        cacheNames.map(function (cacheName) {
+          if (!ALL_CACHE.includes(cacheName)) {
+            console.log('[SW] remove old cache ...', cacheName);
+
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
 
   self.clients.claim();
 });
@@ -68,22 +89,15 @@ self.addEventListener('fetch', (event) => {
         console.log('response NOT in cache, Fetching ...');
         return fetch(event.request)
           .then(async (res) => {
-            const cache = await caches.open('dynamic');
+            const cache = await caches.open(DYNAMIC_CACHE_NAME);
             console.log('[SW] add to cache ...');
             await cache.put(event.request.url, res);
             return res;
           });
       }
-
-      // const networkResponse = await fetch(event.request);
-      // return networkResponse;
     } catch (error) {
       console.log('Fetch failed; returning offline page instead.', event.request, error);
 
-      // const cache = await caches.open(CACHE_NAME);
-      // const cachedResponse = await cache.match(event.request.url);
-      // console.log({ cachedResponse });
-      // return cachedResponse;
     }
   })());
   // }
