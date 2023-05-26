@@ -80,26 +80,56 @@ closeCreatePostModalButton.addEventListener('click', closeCreatePostModal);
 
 createPostArea.addEventListener('click', createPost);
 
-function createCard() {
+// experiment with manual caching
+function onSaveButtonClicked(event) {
+  console.log('click');
+  if ('caches' in window) {
+    caches.open('user-request')
+      .then((cache) => {
+        cache.add('https://httpbin.org/get')
+        cache.add('/src/images/sf-boat.jpg')
+      })
+  }
+}
+
+const createCard = () => {
   var cardWrapper = document.createElement('div');
   cardWrapper.className = 'shared-moment-card mdl-card mdl-shadow--2dp';
-  var cardTitle = document.createElement('div');
+
+  const cardTitle = document.createElement('div');
   cardTitle.className = 'mdl-card__title';
   cardTitle.style.backgroundImage = 'url("/src/images/sf-boat.jpg")';
   cardTitle.style.backgroundSize = 'cover';
   cardTitle.style.height = '180px';
   cardWrapper.appendChild(cardTitle);
-  var cardTitleTextElement = document.createElement('h2');
+
+  const cardTitleTextElement = document.createElement('h2');
   cardTitleTextElement.className = 'mdl-card__title-text';
   cardTitleTextElement.textContent = 'San Francisco Trip';
   cardTitle.appendChild(cardTitleTextElement);
-  var cardSupportingText = document.createElement('div');
+
+  const cardSupportingText = document.createElement('div');
   cardSupportingText.className = 'mdl-card__supporting-text';
   cardSupportingText.textContent = 'In San Francisco';
   cardSupportingText.style.textAlign = 'center';
   cardWrapper.appendChild(cardSupportingText);
+
+  // const cardSaveButton = document.createElement('button');
+  // cardSaveButton.className = 'card-save'
+  // cardSaveButton.textContent = 'Save';
+  // cardSupportingText.appendChild(cardSaveButton)
+
   componentHandler.upgradeElement(cardWrapper);
   sharedMomentsArea.appendChild(cardWrapper);
+
+  // setTimeout(() => {
+  //   const card = document.querySelector('.card-save')
+  //   if (card) {
+  //     card.addEventListener('click', onSaveButtonClicked);
+  //   } else {
+  //     console.log('card not added');
+  //   }
+  // }, 0);
 }
 
 fetch('https://httpbin.org/get')
