@@ -67,33 +67,39 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+const fetchCacheStrategyCacheWithNetwork = async (event) => {
+  try {
+    // const preloadResponse = await event.preloadResponse;
+    // if (preloadResponse) {
+    //   return preloadResponse;
+    // }
+
+    const response = await caches.match(event.request);
+    if (response) {
+      return response;
+    }
+
+    console.log('[SW] Response NOT in cache, fetching ...');
+    const res = await fetch(event.request)
+
+    console.log({ res });
+    console.log('[SW] add to cache:', event.request.url);
+    const cache = await caches.open(CACHE_DYNAMIC_NAME);
+    await cache.put(event.request.url, res);
+    return cache.match(event.request.url);
+  } catch (error) {
+    console.log('[SW] Fetching failed; returning offline page instead.', event.request, error);
+    const cache = await caches.open(CACHE_STATIC_NAME);
+    return cache.match('/offline.html');
+  }
+}
+
 self.addEventListener('fetch', (event) => {
   // console.log('[SW] Fetching something ...', event);
 
-  event.respondWith((async () => {
-    try {
-      // const preloadResponse = await event.preloadResponse;
-      // if (preloadResponse) {
-      //   return preloadResponse;
-      // }
-
-      const response = await caches.match(event.request);
-      if (response) {
-        return response;
-      }
-
-      console.log('[SW] Response NOT in cache, fetching ...');
-      const res = await fetch(event.request)
-
-      console.log({ res });
-      console.log('[SW] add to cache:', event.request.url);
-      const cache = await caches.open(CACHE_DYNAMIC_NAME);
-      await cache.put(event.request.url, res);
-      return cache.match(event.request.url);
-    } catch (error) {
-      console.log('[SW] Fetching failed; returning offline page instead.', event.request, error);
-      const cache = await caches.open(CACHE_STATIC_NAME);
-      return cache.match('/offline.html');
+  event.respondWith((
+    async () => {
+      return await fetchCacheStrategyCacheWithNetwork(event);
     }
-  })());
+  )());
 });
