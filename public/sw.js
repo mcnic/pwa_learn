@@ -1,10 +1,8 @@
-const CACHE_NAME = 'static'
-
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing service worker ...');
 
   event.waitUntil((async () => {
-    const cache = await caches.open(CACHE_NAME)
+    const cache = await caches.open('static')
 
     console.log('[SW] Precaching App Shell ...');
 
@@ -68,7 +66,13 @@ self.addEventListener('fetch', (event) => {
         return response;
       } else {
         console.log('response NOT in cache, Fetching ...');
-        return fetch(event.request);
+        return fetch(event.request)
+          .then(async (res) => {
+            const cache = await caches.open('dynamic');
+            console.log('[SW] add to cache ...');
+            await cache.put(event.request.url, res);
+            return res;
+          });
       }
 
       // const networkResponse = await fetch(event.request);
