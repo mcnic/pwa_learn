@@ -1,13 +1,13 @@
-const CACHE_VERSION = 2;
-const CACHE_NAME = 'static-v' + CACHE_VERSION;
-const DYNAMIC_CACHE_NAME = 'dynamic'
-const ALL_CACHE = [CACHE_NAME, DYNAMIC_CACHE_NAME]
+const CACHE_VERSION = 3;
+const CACHE_STATIC_NAME = 'static-v' + CACHE_VERSION;
+const CACHE_DYNAMIC_NAME = 'dynamic'
+const ALL_CACHE = [CACHE_STATIC_NAME, CACHE_DYNAMIC_NAME]
 
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing service worker ...');
 
   event.waitUntil((async () => {
-    const cache = await caches.open(CACHE_NAME)
+    const cache = await caches.open(CACHE_STATIC_NAME)
 
     console.log('[SW] Precaching App Shell ...');
 
@@ -57,7 +57,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map(function (cacheName) {
           if (!ALL_CACHE.includes(cacheName)) {
-            console.log('[SW] remove old cache ...', cacheName);
+            console.log('[SW] remove old cache:', cacheName);
 
             return caches.delete(cacheName);
           }
@@ -72,9 +72,6 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // console.log('[SW] Fetching something ...', event);
 
-  // fetch(event.request)
-
-  // if (event.request.mode === 'navigate') {
   event.respondWith((async () => {
     try {
       // const preloadResponse = await event.preloadResponse;
@@ -89,8 +86,8 @@ self.addEventListener('fetch', (event) => {
         console.log('response NOT in cache, Fetching ...');
         return fetch(event.request)
           .then(async (res) => {
-            const cache = await caches.open(DYNAMIC_CACHE_NAME);
-            console.log('[SW] add to cache ...');
+            const cache = await caches.open(CACHE_DYNAMIC_NAME);
+            console.log('[SW] add to cache:', event.request.url);
             await cache.put(event.request.url, res);
             return res;
           });
@@ -100,5 +97,4 @@ self.addEventListener('fetch', (event) => {
 
     }
   })());
-  // }
 });
