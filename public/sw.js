@@ -1,4 +1,4 @@
-const CACHE_VERSION = 3;
+const CACHE_VERSION = 5;
 const CACHE_STATIC_NAME = 'static-v' + CACHE_VERSION;
 const CACHE_DYNAMIC_NAME = 'dynamic'
 const ALL_CACHE = [CACHE_STATIC_NAME, CACHE_DYNAMIC_NAME]
@@ -12,14 +12,12 @@ self.addEventListener('install', (event) => {
     console.log('[SW] Precaching App Shell ...');
 
     await cache.addAll([
-      '/manifest.json',
       '/',
+      '/manifest.json',
       '/index.html',
-      '/help',
-      '/help/index.html',
+      '/offline.html',
       '/src/css/app.css',
       '/src/css/feed.css',
-      '/src/css/help.css',
       '/src/js/app.js',
       '/src/js/feed.js',
       '/src/js/fetch.js',
@@ -79,22 +77,23 @@ self.addEventListener('fetch', (event) => {
       //   return preloadResponse;
       // }
 
-      const response = await caches.match(event.request)
+      const response = await caches.match(event.request);
       if (response) {
         return response;
-      } else {
-        console.log('response NOT in cache, Fetching ...');
-        return fetch(event.request)
-          .then(async (res) => {
-            const cache = await caches.open(CACHE_DYNAMIC_NAME);
-            console.log('[SW] add to cache:', event.request.url);
-            await cache.put(event.request.url, res);
-            return res;
-          });
       }
-    } catch (error) {
-      console.log('Fetch failed; returning offline page instead.', event.request, error);
 
+      console.log('[SW] Response NOT in cache, fetching ...');
+      const res = await fetch(event.request)
+
+      console.log({ res });
+      console.log('[SW] add to cache:', event.request.url);
+      const cache = await caches.open(CACHE_DYNAMIC_NAME);
+      await cache.put(event.request.url, res);
+      return cache.match(event.request.url);
+    } catch (error) {
+      console.log('[SW] Fetching failed; returning offline page instead.', event.request, error);
+      const cache = await caches.open(CACHE_STATIC_NAME);
+      return cache.match('/offline.html');
     }
   })());
 });

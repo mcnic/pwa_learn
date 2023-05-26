@@ -138,4 +138,7 @@ fetch('https://httpbin.org/get')
   })
   .then(function (data) {
     createCard();
+  })
+  .catch(err => {
+    console.log({ err });
   });
