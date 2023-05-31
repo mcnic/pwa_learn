@@ -11,7 +11,7 @@ function openCreatePostModal() {
 const createPost = (event) => {
   event.preventDefault();
 
-  var promise = new Promise((resolve, eject) => {
+  new Promise((resolve, eject) => {
     setTimeout(() => {
       resolve('https://swapi.dev/api/people/1');
     }, 1000)
@@ -28,22 +28,14 @@ const createPost = (event) => {
     })
     .then((resp) => {
       // console.log({ resp })
-      if (resp.status === 200)
-        return resp.json()
-      else throw new Error(resp.statusText)
+      if (resp.status !== 200) throw new Error(resp.statusText)
+      return resp.json()
     })
     .then(data => {
       console.log('data', data);
       titleInput.value = data.name;
     })
     .catch(err => console.log({ err }))
-    .then(() => {
-      return new Promise((resolve, eject) => {
-        setTimeout(() => {
-          resolve();
-        }, 1000)
-      })
-    })
     .finally(() => {
       closeCreatePostModal()
     })
@@ -132,13 +124,37 @@ const createCard = () => {
   // }, 0);
 }
 
-fetch('https://httpbin.org/get')
+const clearCards = () => {
+  sharedMomentsArea.children = null;
+}
+
+const url = 'https://httpbin.org/get';
+var networkDataReceived = false;
+
+fetch(url)
   .then(function (res) {
     return res.json();
   })
   .then(function (data) {
+    networkDataReceived = true;
+    console.log('From web', data);
+    clearCards();
     createCard();
   })
   .catch(err => {
     console.log({ err });
   });
+
+if ('caches' in window) {
+  caches.match(url)
+    .then((response) => {
+      return response.json();
+    })
+    .then(data => {
+      console.log('From cache', data);
+      if (!networkDataReceived) {
+        clearCards();
+        createCard();
+      }
+    })
+}
