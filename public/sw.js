@@ -1,4 +1,4 @@
-const CACHE_VERSION = 5;
+const CACHE_VERSION = 12;
 const CACHE_STATIC_NAME = 'static-v' + CACHE_VERSION;
 const CACHE_DYNAMIC_NAME = 'dynamic'
 const ALL_CACHE = [CACHE_STATIC_NAME, CACHE_DYNAMIC_NAME]
@@ -11,6 +11,8 @@ var STATIC_FILES = [
   '/src/js/feed.js',
   '/src/js/promise.js',
   '/src/js/fetch.js',
+  '/src/js/idb.js',
+  '/src/js/utility.js',
   '/src/js/material.min.js',
   '/src/css/app.css',
   '/src/css/feed.css',
@@ -27,46 +29,56 @@ var STATIC_FILES = [
   'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
 ];
 
+const deleteCache = async (key) => {
+  await caches.delete(key);
+};
+
+const deleteOldCaches = async () => {
+  const keyList = await caches.keys();
+  const cachesToDelete = keyList.filter((key) => !ALL_CACHE.includes(key));
+  await Promise.all(cachesToDelete.map(deleteCache));
+};
+
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing service worker ...');
 
   event.waitUntil((async () => {
+    await deleteOldCaches();
+
     const cache = await caches.open(CACHE_STATIC_NAME)
-    console.log('[SW] Precaching App Shell ...');
+    // console.log('[SW] Precaching App Shell ...');
     await cache.addAll([
       '/',
       ...STATIC_FILES
-    ]
-    );
+    ]);
   })());
 });
-
 
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activating service worker ...');
 
-  event.waitUntil((async () => {
-    if ('navigationPreload' in self.registration) {
-      await self.registration.navigationPreload.enable();
-    }
-  })());
-
-  // delete old cache
-  event.waitUntil(
-    caches.keys().then(function (cacheNames) {
-      return Promise.all(
-        cacheNames.map(function (cacheName) {
-          if (!ALL_CACHE.includes(cacheName)) {
-            console.log('[SW] remove old cache:', cacheName);
-
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+  // event.waitUntil(deleteOldCaches());
 
   self.clients.claim();
+});
+
+self.addEventListener("message", (event) => {
+  console.log(`[SW] The client sent me a message: ${event.data}`);
+
+  event.source.postMessage("Hi client");
+});
+
+addEventListener("sync", (event) => {
+  console.log('[SW] sync:', event.tag);
+});
+
+addEventListener("periodicsync", (event) => {
+  console.log('[SW] periodicsync:', event.tag);
+});
+
+addEventListener("push", (event) => {
+  let message = event.data.json();
+  console.log('[SW] push:', message);
 });
 
 const fetchCacheStrategyCacheWithNetwork = async (event) => {
@@ -136,7 +148,7 @@ self.addEventListener('fetch', function (event) {
     caches.match(event.request)
       .then(function (response) {
         if (response) {
-          console.log('get from all cache:', event.request.url);
+          // console.log('get from all cache:', event.request.url);
           return response;
         }
 
@@ -144,7 +156,7 @@ self.addEventListener('fetch', function (event) {
           .then(function (res) {
             return caches.open(CACHE_DYNAMIC_NAME)
               .then(function (cache) {
-                console.log('add to dynamic chache:', event.request.url);
+                // console.log('add to dynamic chache:', event.request.url);
                 cache.put(event.request.url, res.clone());
                 return res;
                 // return cache.match(event.request.url);
