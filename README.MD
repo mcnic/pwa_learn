@@ -48,6 +48,11 @@ Finally, run `npm start` to start the development server and visit
   https://afasterweb.com/2017/01/31/upgrading-your-service-worker-cache/
 - Mozilla Strategy Cookbook:
   https://serviceworke.rs/strategy-cache-and-update_service-worker_doc.html
+- Introducing Background Sync:
+  https://developers.google.com/web/updates/2015/12/background-sync
+- A Basic Guide to Background Sync: https://ponyfoo.com/articles/backgroundsync
+- More about Firebase Cloud Functions:
+  https://firebase.google.com/docs/functions/
 
 ### Want to dive deeper into Promises?
 
