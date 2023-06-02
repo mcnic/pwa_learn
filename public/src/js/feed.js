@@ -2,133 +2,99 @@ var shareImageButton = document.querySelector('#share-image-button');
 var createPostArea = document.querySelector('#create-post');
 var closeCreatePostModalButton = document.querySelector('#close-create-post-modal-btn');
 var sharedMomentsArea = document.querySelector('#shared-moments');
-var titleInput = document.querySelector('#title')
 
 function openCreatePostModal() {
-  showInstallPrompt();
-}
-
-const createPost = (event) => {
-  event.preventDefault();
-
-  new Promise((resolve, eject) => {
-    setTimeout(() => {
-      resolve('https://swapi.dev/api/people/1');
-    }, 1000)
-  })
-    .then((url) => {
-      return fetch(url, {
-        method: 'GET',
-        mode: 'cors',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-      })
-    })
-    .then((resp) => {
-      // console.log({ resp })
-      if (resp.status !== 200) throw new Error(resp.statusText)
-      return resp.json()
-    })
-    .then(data => {
-      console.log('data', data);
-      titleInput.value = data.name;
-    })
-    .catch(err => console.log({ err }))
-    .finally(() => {
-      closeCreatePostModal()
-    })
-
-}
-
-function closeCreatePostModal() {
-  createPostArea.removeAttribute('style');
-}
-
-const showInstallPrompt = () => {
-  createPostArea.style.display = 'block';
+  // createPostArea.style.display = 'block';
+  // setTimeout(function() {
+  createPostArea.style.transform = 'translateY(0)';
+  // }, 1);
   if (deferredPrompt) {
     deferredPrompt.prompt();
 
-    deferredPrompt.userChoice.then(choiceResult => {
-      console.log({ choiceResult });
+    deferredPrompt.userChoice.then(function (choiceResult) {
+      // console.log(choiceResult.outcome);
 
-      if (choiceResult.outcome === 'dismissed') {
-        console.log('cancelling installation');
-      } else {
-        console.log('add app to homescreen');
-      }
+      // if (choiceResult.outcome === 'dismissed') {
+      //   console.log('User cancelled installation');
+      // } else {
+      //   console.log('User added to home screen');
+      // }
+    });
 
-      deferredPrompt = null
-    })
+    deferredPrompt = null;
   }
 
+  // if ('serviceWorker' in navigator) {
+  //   navigator.serviceWorker.getRegistrations()
+  //     .then(function(registrations) {
+  //       for (var i = 0; i < registrations.length; i++) {
+  //         registrations[i].unregister();
+  //       }
+  //     })
+  // }
+}
+
+function closeCreatePostModal() {
+  createPostArea.style.transform = 'translateY(100vh)';
+  // createPostArea.style.display = 'none';
 }
 
 shareImageButton.addEventListener('click', openCreatePostModal);
 
 closeCreatePostModalButton.addEventListener('click', closeCreatePostModal);
 
-createPostArea.addEventListener('click', createPost);
-
-// experiment with manual caching
+// Currently not in use, allows to save assets in cache on demand otherwise
 function onSaveButtonClicked(event) {
-  console.log('click');
+  console.log('clicked');
   if ('caches' in window) {
-    caches.open('user-request')
-      .then((cache) => {
-        cache.add('https://httpbin.org/get')
-        cache.add('/src/images/sf-boat.jpg')
-      })
+    caches.open('user-requested')
+      .then(function (cache) {
+        cache.add('https://httpbin.org/get');
+        cache.add('/src/images/sf-boat.jpg');
+      });
   }
 }
 
-const createCard = () => {
+function clearCards() {
+  while (sharedMomentsArea.hasChildNodes()) {
+    sharedMomentsArea.removeChild(sharedMomentsArea.lastChild);
+  }
+}
+
+function createCard(data) {
   var cardWrapper = document.createElement('div');
   cardWrapper.className = 'shared-moment-card mdl-card mdl-shadow--2dp';
-
-  const cardTitle = document.createElement('div');
+  var cardTitle = document.createElement('div');
   cardTitle.className = 'mdl-card__title';
-  cardTitle.style.backgroundImage = 'url("/src/images/sf-boat.jpg")';
+  cardTitle.style.backgroundImage = 'url(' + data.image + ')';
   cardTitle.style.backgroundSize = 'cover';
-  cardTitle.style.height = '180px';
   cardWrapper.appendChild(cardTitle);
-
-  const cardTitleTextElement = document.createElement('h2');
+  var cardTitleTextElement = document.createElement('h2');
+  cardTitleTextElement.style.color = 'white';
   cardTitleTextElement.className = 'mdl-card__title-text';
-  cardTitleTextElement.textContent = 'San Francisco Trip';
+  cardTitleTextElement.textContent = data.title;
   cardTitle.appendChild(cardTitleTextElement);
-
-  const cardSupportingText = document.createElement('div');
+  var cardSupportingText = document.createElement('div');
   cardSupportingText.className = 'mdl-card__supporting-text';
-  cardSupportingText.textContent = 'In San Francisco';
+  cardSupportingText.textContent = data.location;
   cardSupportingText.style.textAlign = 'center';
-  cardWrapper.appendChild(cardSupportingText);
-
-  // const cardSaveButton = document.createElement('button');
-  // cardSaveButton.className = 'card-save'
+  // var cardSaveButton = document.createElement('button');
   // cardSaveButton.textContent = 'Save';
-  // cardSupportingText.appendChild(cardSaveButton)
-
+  // cardSaveButton.addEventListener('click', onSaveButtonClicked);
+  // cardSupportingText.appendChild(cardSaveButton);
+  cardWrapper.appendChild(cardSupportingText);
   componentHandler.upgradeElement(cardWrapper);
   sharedMomentsArea.appendChild(cardWrapper);
-
-  // setTimeout(() => {
-  //   const card = document.querySelector('.card-save')
-  //   if (card) {
-  //     card.addEventListener('click', onSaveButtonClicked);
-  //   } else {
-  //     console.log('card not added');
-  //   }
-  // }, 0);
 }
 
-const clearCards = () => {
-  sharedMomentsArea.children = null;
+function updateUI(data) {
+  clearCards();
+  for (var i = 0; i < data.length; i++) {
+    createCard(data[i]);
+  }
 }
 
-const url = 'https://httpbin.org/get';
+var url = 'https://pwagram-99adf.firebaseio.com/posts.json';
 var networkDataReceived = false;
 
 fetch(url)
@@ -138,23 +104,19 @@ fetch(url)
   .then(function (data) {
     networkDataReceived = true;
     console.log('From web', data);
-    clearCards();
-    createCard();
-  })
-  .catch(err => {
-    console.log({ err });
+    var dataArray = [];
+    for (var key in data) {
+      dataArray.push(data[key]);
+    }
+    updateUI(dataArray);
   });
 
-if ('caches' in window) {
-  caches.match(url)
-    .then((response) => {
-      return response.json();
-    })
-    .then(data => {
-      console.log('From cache', data);
+if ('indexedDB' in window) {
+  readAllData('posts')
+    .then(function (data) {
       if (!networkDataReceived) {
-        clearCards();
-        createCard();
+        console.log('From cache', data);
+        updateUI(data);
       }
-    })
+    });
 }
