@@ -16,7 +16,7 @@ var STATIC_FILES = [
   '/src/js/material.min.js',
   '/src/css/app.css',
   '/src/css/feed.css',
-  '/src/images/main-image.jpg',
+  '/src/images/main-image.webp',
   '/src/images/icons/app-icon-48x48.png',
   '/src/images/icons/app-icon-96x96.png',
   '/src/images/icons/app-icon-144x144.png',
