@@ -163,14 +163,20 @@
             </form>
           </div>
           <picture>
-            <source type="image/webp" srcset="/src/images/main-image.webp" />
-            <source type="image/jpeg" srcset="/src/images/main-image.jpg" />
-            <img
-              src="/src/images/main-image.jpeg"
+            <source
+              type="image/webp"
               srcset="
-                /src/images/main-image-lg.jpg 1200w,
-                /src/images/main-image.jpg     900w,
-                /src/images/main-image-sm.jpg  480w
+                /src/images/main-image-sm.webp  480w,
+                /src/images/main-image.webp     900w,
+                /src/images/main-image-lg.webp 1200w
+              "
+            />
+            <img
+              src="/src/images/main-image.webp"
+              srcset="
+                /src/images/main-image-lg.webp 1200w,
+                /src/images/main-image.webp     900w,
+                /src/images/main-image-sm.webp  480w
               "
               alt="Explore the City"
               class="main-image"
