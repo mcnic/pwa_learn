@@ -2,7 +2,7 @@ const CACHE_VERSION = 12;
 const CACHE_STATIC_NAME = 'static-v' + CACHE_VERSION;
 const CACHE_DYNAMIC_NAME = 'dynamic'
 const ALL_CACHE = [CACHE_STATIC_NAME, CACHE_DYNAMIC_NAME]
-var STATIC_FILES = [
+const STATIC_FILES = [
   '/favicon.ico',
   '/manifest.json',
   '/index.html',
@@ -16,7 +16,7 @@ var STATIC_FILES = [
   '/src/js/material.min.js',
   '/src/css/app.css',
   '/src/css/feed.css',
-  '/src/images/main-image.webp',
+  // '/src/images/main-image.webp',
   '/src/images/icons/app-icon-48x48.png',
   '/src/images/icons/app-icon-96x96.png',
   '/src/images/icons/app-icon-144x144.png',
@@ -154,12 +154,15 @@ self.addEventListener('fetch', function (event) {
 
         return fetch(event.request)
           .then(function (res) {
+            if (event.request.url.includes('.json')) {
+              return res;
+            }
+
             return caches.open(CACHE_DYNAMIC_NAME)
               .then(function (cache) {
-                // console.log('add to dynamic chache:', event.request.url);
+                console.log('add to dynamic chache:', event.request.url);
                 cache.put(event.request.url, res.clone());
                 return res;
-                // return cache.match(event.request.url);
               })
           })
           .catch(function (err) {

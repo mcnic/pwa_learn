@@ -62,6 +62,7 @@ function clearCards() {
 }
 
 function createCard(data) {
+  console.log('create', data);
   var cardWrapper = document.createElement('div');
   cardWrapper.className = 'shared-moment-card mdl-card mdl-shadow--2dp';
   var cardTitle = document.createElement('div');
@@ -94,7 +95,7 @@ function updateUI(data) {
   }
 }
 
-var url = 'https://pwagram-99adf.firebaseio.com/posts.json';
+var url = 'https://pwa-lern-52f8d-default-rtdb.firebaseio.com/posts.json';
 var networkDataReceived = false;
 
 fetch(url)
