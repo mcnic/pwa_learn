@@ -1,7 +1,10 @@
+importScripts('/src/js/idb.js');
+importScripts('/src/js/utility.js');
+
 const CACHE_VERSION = 12;
 const CACHE_STATIC_NAME = 'static-v' + CACHE_VERSION;
 const CACHE_DYNAMIC_NAME = 'dynamic'
-const ALL_CACHE = [CACHE_STATIC_NAME, CACHE_DYNAMIC_NAME]
+const ALL_CACHE = [CACHE_STATIC_NAME, CACHE_DYNAMIC_NAME];
 const STATIC_FILES = [
   '/favicon.ico',
   '/manifest.json',
@@ -28,6 +31,10 @@ const STATIC_FILES = [
   'https://fonts.googleapis.com/icon?family=Material+Icons',
   'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
 ];
+const FIREBASE_NAME = 'pwa-lern-52f8d'
+const FIREBASE_DB_URL = `https://${FIREBASE_NAME}-default-rtdb.firebaseio.com`
+const FIREBASE_HOSTING_URL = `https://pwa-lern-52f8d.web.app`
+const FIREBASE_FUNCTION_URL = 'https://storepostdata-wuqxsx4jeq-uc.a.run.app';
 
 const deleteCache = async (key) => {
   await caches.delete(key);
@@ -70,6 +77,36 @@ self.addEventListener("message", (event) => {
 
 addEventListener("sync", (event) => {
   console.log('[SW] sync:', event.tag);
+  if (event.tag === 'sync-new-posts') {
+    console.log('[SW] Syncing new Posts');
+    event.waitUntil((async () => {
+      const data = await readAllData('sync-posts');
+      console.log({ data });
+      for (var dt of data) {
+        fetch(FIREBASE_FUNCTION_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Origin': 'localhost'
+          },
+          body: JSON.stringify({
+            id: dt.id,
+            title: dt.title,
+            location: dt.location,
+            image: `/src/images/main-image.webp`
+          })
+        })
+          .then(function (res) {
+            console.log('Sent data', res);
+            res.ok && res.json().then(resData => deleteItemFromData('sync-posts', resData.id));
+          })
+          .catch(function (err) {
+            console.log('Error while sending data', err);
+          });
+      }
+    })());
+  }
 });
 
 addEventListener("periodicsync", (event) => {
