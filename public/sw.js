@@ -88,7 +88,6 @@ addEventListener("sync", (event) => {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Origin': 'localhost'
           },
           body: JSON.stringify({
             id: dt.id,
