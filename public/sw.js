@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-const CACHE_VERSION = 12;
+const CACHE_VERSION = 23;
 const CACHE_STATIC_NAME = 'static-v' + CACHE_VERSION;
 const CACHE_DYNAMIC_NAME = 'dynamic'
 const ALL_CACHE = [CACHE_STATIC_NAME, CACHE_DYNAMIC_NAME];
@@ -93,7 +93,7 @@ addEventListener("sync", (event) => {
             id: dt.id,
             title: dt.title,
             location: dt.location,
-            image: `/src/images/main-image.webp`
+            image: '/src/images/sf-boat.jpg'
           })
         })
           .then(function (res) {
@@ -212,4 +212,63 @@ self.addEventListener('fetch', function (event) {
           });
       })
   );
+});
+
+self.addEventListener('notificationclick', function (event) {
+  var notification = event.notification;
+  var action = event.action;
+
+  console.log(notification);
+
+  if (action === 'confirm') {
+    console.log('Confirm was chosen');
+    notification.close();
+  } else {
+    console.log(action);
+    event.waitUntil(
+      clients.matchAll()
+        .then(function (clis) {
+          var client = clis.find(function (c) {
+            return c.visibilityState === 'visible';
+          });
+
+          if (client !== undefined) {
+            client.navigate(notification.data.url);
+            client.focus();
+          } else {
+            clients.openWindow(notification.data.url);
+          }
+          notification.close();
+        })
+    );
+  }
+});
+
+self.addEventListener('notificationclose', function (event) {
+  console.log('close');
+});
+
+self.addEventListener('push', function (event) {
+  console.log('[SW} Push:', event);
+
+  let data = { title: 'new', content: 'something new happened', openUrl: '/' }
+  if (event.data) {
+    data = {
+      ...data,
+      ...event.data.json()
+    };
+  }
+
+  const options = {
+    body: data.content,
+    icon: '/src/images/icons/app-icon-96x96.png',
+    badge: '/src/images/icons/app-icon-96x96.png',
+    data: {
+      url: data.openUrl
+    }
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  )
 });

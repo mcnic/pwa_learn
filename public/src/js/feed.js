@@ -1,5 +1,3 @@
-const FIREBASE_DB_URL = 'https://pwa-lern-52f8d-default-rtdb.firebaseio.com';
-
 var shareImageButton = document.querySelector('#share-image-button');
 var createPostArea = document.querySelector('#create-post');
 var closeCreatePostModalButton = document.querySelector('#close-create-post-modal-btn');
@@ -138,7 +136,7 @@ function sendData() {
       id: new Date().toISOString(),
       title: titleInput.value,
       location: locationInput.value,
-      image: '/src/images/main-image.webp'
+      image: '/src/images/sf-boat.jpg'
     })
   })
     .then(function (res) {
