@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-const CACHE_VERSION = 23;
+const CACHE_VERSION = 24;
 const CACHE_STATIC_NAME = 'static-v' + CACHE_VERSION;
 const CACHE_DYNAMIC_NAME = 'dynamic'
 const ALL_CACHE = [CACHE_STATIC_NAME, CACHE_DYNAMIC_NAME];
@@ -66,7 +66,7 @@ self.addEventListener('activate', (event) => {
 
   // event.waitUntil(deleteOldCaches());
 
-  self.clients.claim();
+  // event.waitUntil(clients.claim());
 });
 
 self.addEventListener("message", (event) => {
@@ -183,12 +183,7 @@ self.addEventListener('fetch', function (event) {
   event.respondWith(
     caches.match(event.request)
       .then(function (response) {
-        if (response) {
-          // console.log('get from all cache:', event.request.url);
-          return response;
-        }
-
-        return fetch(event.request)
+        return response || fetch(event.request)
           .then(function (res) {
             if (event.request.url.includes('.json')) {
               return res;

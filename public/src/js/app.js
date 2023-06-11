@@ -9,17 +9,18 @@ if (!window.Promise) {
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker
-    .register('/sw.js')
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
 
-  navigator.serviceWorker.addEventListener("message", (event) => {
-    // event is a MessageEvent object
-    console.log(`The service worker sent me a message: ${event.data}`);
-  });
+    navigator.serviceWorker.addEventListener("message", (event) => {
+      // event is a MessageEvent object
+      console.log(`The service worker sent me a message: ${event.data}`);
+    });
 
-  navigator.serviceWorker.ready.then((registration) => {
-    registration.active.postMessage("Hi service worker");
-  });
+    navigator.serviceWorker.ready.then((registration) => {
+      registration.active.postMessage("Hi service worker");
+    });
+  })
 }
 
 window.addEventListener('beforeinstallprompt', event => {
